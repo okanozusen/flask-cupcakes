@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cupcake App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            padding: 20px;
+        }
+        #cupcake-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        #cupcake-list li {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+        #cupcake-list img {
+            width: 50px;
+            height: 50px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cupcake Collection</h1>
+
+        <form id="cupcake-form">
+            <div class="form-group">
+                <input type="text" id="flavor" class="form-control" placeholder="Flavor" required>
+            </div>
+            <div class="form-group">
+                <input type="text" id="size" class="form-control" placeholder="Size" required>
+            </div>
+            <div class="form-group">
+                <input type="number" id="rating" class="form-control" placeholder="Rating" required step="0.1" min="0" max="5">
+            </div>
+            <div class="form-group">
+                <input type="text" id="image" class="form-control" placeholder="Image URL (optional)">
+            </div>
+            <button type="submit" class="btn btn-primary">Add Cupcake</button>
+        </form>
+
+        <h2 class="mt-4">Cupcakes:</h2>
+        <ul id="cupcake-list"></ul>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            function loadCupcakes() {
+                axios.get('/api/cupcakes').then(response => {
+                    const cupcakes = response.data.cupcakes;
+                    $('#cupcake-list').empty(); // Clear the current list
+                    cupcakes.forEach(cupcake => {
+                        $('#cupcake-list').append(`
+                            <li>
+                                ${cupcake.flavor} (${cupcake.size}) - Rating: ${cupcake.rating}
+                                <img src="${cupcake.image}" alt="${cupcake.flavor} cupcake">
+                            </li>
+                        `);
+                    });
+                });
+            }
+
+            $('#cupcake-form').on('submit', function(e) {
+                e.preventDefault();
+                const data = {
+                    flavor: $('#flavor').val(),
+                    size: $('#size').val(),
+                    rating: $('#rating').val(),
+                    image: $('#image').val() || 'https://tinyurl.com/demo-cupcake'
+                };
+                axios.post('/api/cupcakes', data).then(response => {
+                    loadCupcakes(); // Reload cupcakes
+                    $('#cupcake-form')[0].reset(); // Clear the form
+                });
+            });
+
+            loadCupcakes(); // Initial load
+        });
+    </script>
+</body>
+</html>
